@@ -29,7 +29,11 @@ public class RunBingBot {
     }
 	@Test
 	public void botmain() throws Exception{
-		signUpForYahoo(new Account("Joe", "Regular", "TheDoctor90210", 0));
+		try{
+			signUpForYahoo(new Account("Joe", "Regular", "TheDoctor90210", 0));
+		} catch (Exception e){
+			
+		}
 //		 ArrayList<IPaddress> ips = InfoGenerator.deserialize("Accounts.txt");
 //		 for(IPaddress ip : ips){
 //			 for(Account a : ip.accounts){
@@ -58,7 +62,11 @@ public class RunBingBot {
 	}
 
 	public void signUpForYahoo(Account a){
+		try{
 		 driver.get("https://edit.yahoo.com/registration");
+		} catch (Exception e){
+			signUpForYahoo(a);
+		}
 		 try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -73,7 +81,6 @@ public class RunBingBot {
 		 WebElement dayBox = driver.findElement(By.id("day"));
 		 WebElement yearBox = driver.findElement(By.id("year"));
 		 WebElement maleButton = driver.findElement(By.id("male"));
-		 WebElement finishButton = driver.findElement(By.id("yui_3_7_3_2_1436040467549_5527"));
 		 firstNameBox.sendKeys(a.getFirstName());
 		 lastNameBox.sendKeys(a.getLastName());
 		 emailBox.sendKeys(a.getEmail());
@@ -93,7 +100,8 @@ public class RunBingBot {
 				}
 		 }
 		 maleButton.click();
-		 finishButton.click();
+		 passwordBox.click();
+		 passwordBox.sendKeys(Keys.ENTER);
 	}
 	
 	public void signUpForAmazon(){
