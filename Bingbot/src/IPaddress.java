@@ -3,7 +3,7 @@ public class IPaddress {
 	private String IP = "";
 	private String port = "";
 	private String country = "";
-	public ArrayList<Account> accounts = new ArrayList<Account>();
+	private ArrayList<Account> accounts = new ArrayList<Account>();
 	
 	public IPaddress(String address, String port, String country){
 		IP = address;
@@ -20,9 +20,33 @@ public class IPaddress {
 		this.port = port;
 		this.accounts = accounts;
 	}
-	
-	public void useProxy(){
-		
+
+	public String getPort() {
+		return port;
+	}
+
+	public void setPort(String port) {
+		this.port = port;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public ArrayList<Account> getAccounts() {
+		return accounts;
+	}
+
+	public void setAccounts(ArrayList<Account> accounts) {
+		this.accounts = accounts;
+	}
+
+	public void setIP(String iP) {
+		IP = iP;
 	}
 
 	public String getIP() {

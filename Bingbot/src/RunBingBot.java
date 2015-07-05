@@ -1,45 +1,43 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.ArrayList;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.interactions.Mouse;
-import org.openqa.selenium.interactions.internal.Coordinates;
-import org.openqa.selenium.remote.RemoteWebElement;
-import org.openqa.selenium.support.events.AbstractWebDriverEventListener;
-import org.openqa.selenium.support.events.internal.EventFiringMouse;
-import org.openqa.selenium.support.ui.Wait;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.remote.CapabilityType;
+import org.openqa.selenium.remote.DesiredCapabilities;
 
 public class RunBingBot {
 	private static WebDriver driver;
 	private static ArrayList<IPaddress> IPs = new ArrayList<IPaddress>();
 	@BeforeClass
     public static void setup(){
-	   	 System.setProperty("webdriver.chrome.driver", "C:\\Users\\Ben\\Downloads\\chromedriver_win32\\chromedriver.exe");
-	     driver = new ChromeDriver();
+	   	 System.setProperty("webdriver.ie.driver", "C:\\Users\\Ben\\.eclipse\\IEDriverServer.exe");
     }
 	@Test
 	public void botmain() throws Exception{
-		try{
-			signUpForYahoo(new Account("Joe", "Regular", "TheDoctor90210", 0));
-		} catch (Exception e){
-			
-		}
-//		 ArrayList<IPaddress> ips = InfoGenerator.deserialize("Accounts.txt");
-//		 for(IPaddress ip : ips){
-//			 for(Account a : ip.accounts){
-//				 signUpForYahoo(a);
-//			 }
-//		 }
+		 ArrayList<IPaddress> ips = InfoGenerator.deserialize("Accounts.txt");
+		 int done = 0;
+		 for(int i = 3; i < ips.size(); i++){
+			 System.out.println("------------Connecting to Server in " + ips.get(i).getCountry() + "------------");
+			 String PROXY = ips.get(i).getIP() + ":" + ips.get(i).getPort();
+			 org.openqa.selenium.Proxy proxy = new org.openqa.selenium.Proxy();
+				proxy.setHttpProxy(PROXY).setFtpProxy(PROXY).setSslProxy(PROXY);
+				DesiredCapabilities cap = new DesiredCapabilities();
+				cap.setCapability(CapabilityType.PROXY, proxy);
+				cap.setCapability("ignoreZoomSetting", true);
+				driver = new InternetExplorerDriver(cap);
+			 for(int j = 0; j < 5; j++){
+				 signUpForYahoo(ips.get(i).getAccounts().get(j));
+				 System.out.println(ips.get(i).getAccounts().get(j));
+				 done++;
+				 System.out.println("Time: " + ((double)System.nanoTime()/1000000000) + "\nCompleted: " + done + "\nRate: " + ((double)done/(double)System.nanoTime()) * 1000000000);
+			 }
+			 	driver.close();
+		 }
 	}
 	
 	public void signIn(String email, String password){
@@ -93,15 +91,17 @@ public class RunBingBot {
 		 yearBox.click();
 		 for(int i = 0; i < 45; i ++){
 			 yearBox.sendKeys(Keys.ARROW_DOWN);
-			 try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
 		 }
-		 maleButton.click();
-		 passwordBox.click();
+		 yearBox.sendKeys(Keys.ENTER);
+		 maleButton.sendKeys(Keys.SPACE);
 		 passwordBox.sendKeys(Keys.ENTER);
+		 try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		waitForCaptchaSolution();
 	}
 	
 	public void signUpForAmazon(){
@@ -114,6 +114,27 @@ public class RunBingBot {
 	
 	public void signUpForBingRewards(){
 		
+	}
+	
+	public void waitForCaptchaSolution(){
+		while(!captchaBoxExists()){
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private boolean captchaBoxExists(){
+		boolean run = false;
+		try{
+			WebElement x = driver.findElement(By.id("captchaV5Answer"));
+		}catch (Exception e){
+			run = true;
+		}
+		return run;
 	}
 }
 

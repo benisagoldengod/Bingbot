@@ -60,7 +60,7 @@ public class InfoGenerator{
 	
 	//returns username based on given name
 	public static String makeEmail(String firstName, String lastName){
-		return firstName.substring(0, firstName.length()/2) + lastName.substring(lastName.length()/2) + r.nextInt(10000);
+		return firstName.substring(0, firstName.length()/2) + lastName.substring(lastName.length()/2) + 10000/firstName.length();
 	}
 	
 	public static Account getNewAccount(){
@@ -79,7 +79,7 @@ public class InfoGenerator{
 					String[] s = splitLine[i].split("-");
 					accounts.add(new Account(s[0], s[1], s[2], Integer.parseInt(s[3])));
 				}
-				ips.add(new IPaddress(splitLine[0], splitLine[1], splitLine[3], accounts));
+				ips.add(new IPaddress(splitLine[0], splitLine[1], splitLine[2], accounts));
 			}
 			br.close();
 			return ips;
