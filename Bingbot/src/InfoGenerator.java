@@ -55,7 +55,22 @@ public class InfoGenerator{
 	}
 	//returns random name from the names list
 	public static String getRandomName(){
-		return names.get(r.nextInt(names.size()));
+		if(names.size() >= 1){
+			return names.get(r.nextInt(names.size()));
+		}else{
+			try{
+				BufferedReader br = new BufferedReader(new FileReader("names.txt"));
+				String line = br.readLine();
+				while((line = br.readLine()) != null){
+					names.add(line.substring(0,15).trim().toLowerCase());
+				}
+				br.close();
+				return names.get(r.nextInt(names.size()));
+			}catch(Exception e){
+				e.printStackTrace();
+				return null;
+			}
+		}
 	}
 	
 	//returns username based on given name
