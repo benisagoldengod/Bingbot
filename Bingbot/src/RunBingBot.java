@@ -1,21 +1,17 @@
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.Proxy;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.remote.DesiredCapabilities;
 
 public class RunBingBot {
 	private static WebDriver driver;
 	private static ArrayList<IPaddress> IPs = new ArrayList<IPaddress>();
-	public static void setup() {
-		System.setProperty("webdriver.chrome.driver", "C:\\Users\\Ben\\.eclipse\\chromedriver.exe");
-	}
 	public static void main(String[] args){
 		setup();
 		// ArrayList<IPaddress> ips = InfoGenerator.deserialize("Accounts.txt");
@@ -31,8 +27,9 @@ public class RunBingBot {
 //			cap.setCapability(CapabilityType.PROXY, proxy);
 		driver = new ChromeDriver();
 		signIn("bzabback@hotmail.com", "Cimpala123");
-		searchForTheDay();
+		search30Times();
 		driver.close();
+		updateStatus("Shutting down");
 		// //for(int j = 0; j < 5; j++){
 		// signUpForYahoo(ips.get(i).getAccounts().get(j));
 		// System.out.println(ips.get(i).getAccounts().get(j));
@@ -44,8 +41,14 @@ public class RunBingBot {
 		// driver.close();
 		// }
 	}
+	
+	public static void setup() {
+		updateStatus("Starting web driver");
+		System.setProperty("webdriver.chrome.driver", "C:\\Users\\Ben\\.eclipse\\chromedriver.exe");
+	}
 
 	public static void signIn(String email, String password) {
+		updateStatus("Signing in to Microsoft account");
 		driver.get("https://login.live.com/login.srf?wa=wsignin1.0&rpsnv=12&ct=1430583495&rver=6.0.5286."
 				+ "0&wp=MBI&wreply=https:%2F%2Fwww.bing.com%2Fsecure%2FPassport.aspx%3Frequrl%3Dhttp%253a%252f%252f"
 				+ "www.bing.com%252fsearch%253fq%253dtest%252c%252btest%2526qs%253dbs%2526form%253dQBLH%2526wlexp"
@@ -64,13 +67,14 @@ public class RunBingBot {
 		signInButton.click();
 	}
 
-	public static void searchForTheDay() { //searches 30 times, as many searches as is allowed per day
+	public static void search30Times() { //searches 30 times, as many searches as is allowed per day
+		updateStatus("Beginning search");
 		Random r = new Random();
 		WebElement searchBox = waitForElementToLoad(By.name("q"));
 		searchBox.sendKeys(InfoGenerator.getRandomName() + Keys.ENTER);
-		for (int i = 0; i < 3; i++) {
-			sleep(1000 + r.nextInt(1800));// wait for 1 second to 3 minutes
-											// before next search
+		int extra = r.nextInt(30);
+		for (int i = 0; i < 25 + extra; i++) {
+			updateStatus("Searching");
 			WebElement suggestedResultTable = null;
 			int j = 1;
 			while (j < 5) { // If there are suggested results click the first
@@ -82,21 +86,33 @@ public class RunBingBot {
 				j++;
 			}
 			if (suggestedResultTable != null) {
+				updateStatus("Waiting before clicking related search result");
+				sleep(2000);
 				if (tryToGetElement(By.xpath("//*[@id=\"b_context\"]/li[" + j + "]/ul/li[1]/a")) != null) {
-					tryToGetElement(By.xpath("//*[@id=\"b_context\"]/li[" + j + "]/ul/li[1]/a")).click();
+					try{
+						tryToGetElement(By.xpath("//*[@id=\"b_context\"]/li[" + j + "]/ul/li[1]/a")).click();
+					}catch(WebDriverException e){
+						driver.get("http://bing.com");
+						searchBox = waitForElementToLoad(By.name("q"));
+						searchBox.sendKeys(InfoGenerator.getRandomName() + Keys.ENTER);
+						System.gc();
+					}
 				}
 			} else {// no suggestions, so click second result and go back to
 					// bing.com
 				if (tryToGetElement(By.xpath("//*[@id=\"b_results\"]/li[2]/h2/a")) != null) {
 					driver.findElement(By.xpath("//*[@id=\"b_results\"]/li[2]/h2/a")).click();
+					updateStatus("Waiting on current webpage before next search");
+					sleep(1000 + r.nextInt(1800000));// wait for 1 second to 30 minutes
+													// before next search
 				}
-				sleep(1000);
 				driver.get("http://bing.com");
 				searchBox = waitForElementToLoad(By.name("q"));
 				searchBox.sendKeys(InfoGenerator.getRandomName() + Keys.ENTER);
 				System.gc();
 			}
 		}
+		updateStatus("Searching complete");
 	}
 
 	public static void sleep(long millis) {
@@ -178,4 +194,13 @@ public class RunBingBot {
 			return null;
 		}
 	}
+	
+	private static void updateStatus(String message){
+		Date d = new Date();
+		System.out.println(d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + " --- " + message);
+		System.gc();
+	}
+	
+	
+	
 }
